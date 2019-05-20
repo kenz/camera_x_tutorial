@@ -70,13 +70,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     }
 
                     override fun onError(useCaseError: ImageCapture.UseCaseError, message: String, cause: Throwable?) {
-                        Toast.makeText(baseContext, "Photo capture failed: ${message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(baseContext, "Photo capture failed: $message", Toast.LENGTH_SHORT).show()
                     }
 
                 }
             )
         }
         CameraX.bindToLifecycle(this, preview)
+        CameraX.bindToLifecycle(this, imageCapture)
 
 
     }
