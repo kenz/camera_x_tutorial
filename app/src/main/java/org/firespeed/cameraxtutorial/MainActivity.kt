@@ -10,13 +10,13 @@ import android.util.Rational
 import android.view.Surface
 import android.view.TextureView
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.Toast
-import androidx.camera.core.CameraX
-import androidx.camera.core.Preview
-import androidx.camera.core.PreviewConfig
+import androidx.camera.core.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 private const val REQUEST_CODE_PERMISSION = 10
@@ -56,6 +56,28 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             updateTransform()
         }
         CameraX.bindToLifecycle(this, preview)
+        val imageCaptureConfig = ImageCaptureConfig.Builder()
+            .setTargetAspectRatio(Rational(1, 1))
+            .setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY).build()
+
+        val imageCapture = ImageCapture(imageCaptureConfig)
+        findViewById<ImageButton>(R.id.capture_button).setOnClickListener {
+            val file = File(externalMediaDirs.first(), "${System.currentTimeMillis()}.jpg")
+            imageCapture.takePicture(file,
+                object : ImageCapture.OnImageSavedListener {
+                    override fun onImageSaved(file: File) {
+                        Toast.makeText(baseContext, "Photo capture succeeded: ${file.absolutePath}", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun onError(useCaseError: ImageCapture.UseCaseError, message: String, cause: Throwable?) {
+                        Toast.makeText(baseContext, "Photo capture failed: ${message}", Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+            )
+        }
+        CameraX.bindToLifecycle(this, preview)
+
 
     }
 
