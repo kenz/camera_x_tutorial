@@ -6,6 +6,8 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Size
 import android.graphics.Matrix
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Rational
 import android.view.Surface
 import android.view.TextureView
@@ -76,9 +78,19 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 }
             )
         }
-        CameraX.bindToLifecycle(this, preview)
-        CameraX.bindToLifecycle(this, imageCapture)
 
+        val analyzerConfig = ImageAnalysisConfig.Builder().apply{
+            val analyzerThread = HandlerThread("LuminosityAnalysis").apply{start()}
+            setCallbackHandler(Handler(analyzerThread.looper))
+            setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
+        }.build()
+        val analyzerUseCase = ImageAnalysis(analyzerConfig).apply{
+            analyzer = LuminousityAnalyzer()
+        }
+        CameraX.bindToLifecycle(this, preview, imageCapture)
+
+
+        CameraX.bindToLifecycle(this, imageCapture, analyzerUseCase)
 
     }
 
